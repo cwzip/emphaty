@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마음 톡톡! 우리 반 공감 대화 연습소</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Jua (제목용 귀여운 폰트) & Gowun Dodum (가독성 좋은 본문용 폰트) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <!-- html2canvas (평가지 이미지 저장용) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: #FFF9F0;
+            background-image: radial-gradient(#FFE5D9 2px, transparent 2px), radial-gradient(#E2ECE9 2px, #FFF9F0 2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: #3D3B38;
+        }
+        .font-jua {
+            font-family: 'Jua', sans-serif;
+        }
+        .bubble-tail-left::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 24px;
+            border-width: 10px 14px 10px 0;
+            border-style: solid;
+            border-color: transparent #FFFFFF transparent transparent;
+        }
+        @media (max-width: 640px) {
+            .bubble-tail-left::before {
+                left: 24px;
+                top: -12px;
+                border-width: 0 10px 14px 10px;
+                border-color: transparent transparent #FFFFFF transparent;
+            }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        /* 마이크 녹음 중 파동 애니메이션 */
+        @keyframes micPulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5); }
+            70% { box-shadow: 0 0 0 16px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        .mic-recording-pulse {
+            animation: micPulse 1.5s infinite;
+        }
+        @keyframes waveBar {
+            0%, 100% { height: 6px; }
+            50% { height: 22px; }
+        }
+        .wave-bar {
+            width: 4px;
+            border-radius: 9999px;
+            background-color: #F43F5E;
+            animation: waveBar 0.8s ease-in-out infinite;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+
+        /* 인쇄 시 불필요한 버튼 숨김 */
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            #certificate-card {
+                box-shadow: none !important;
+                border: 4px solid #FBBF24 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+        }
+
+        /* 대화 장면: 캐릭터 등장 · 말하기 · 타자 효과 */
+        @keyframes enterChar {
+            0% { transform: translateX(-140%) rotate(-12deg); opacity: 0; }
+            70% { transform: translateX(6%) rotate(3deg); opacity: 1; }
+            100% { transform: translateX(0) rotate(0); opacity: 1; }
+        }
+        .char-enter {
+            animation: enterChar 0.8s cubic-bezier(0.2, 0.8, 0.3, 1.1) both;
+        }
+        @keyframes charTalk {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.07); }
+        }
+        .char-talking {
+            animation: charTalk 0.45s ease-in-out infinite;
+        }
+        @keyframes caretBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        .typing-caret::after {
+            content: '▍';
+            color: #F59E0B;
+            animation: caretBlink 0.8s infinite;
+        }
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+            40% { transform: translateY(-5px); opacity: 1; }
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background-color: #7DD3FC;
+            display: inline-block;
+            animation: dotBounce 1.2s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+        @media (prefers-reduced-motion: reduce) {
+            .char-enter, .char-talking, .animate-float { animation: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- 상단 헤더 -->
+    <header class="w-full bg-white/80 backdrop-blur-md border-b-2 border-amber-100 py-3 px-4 sticky top-0 z-30 no-print">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl sm:text-3xl">💌</span>
+                <h1 class="font-jua text-xl sm:text-2xl text-amber-600 tracking-wide">마음 톡톡! 공감 대화 연습소</h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+            <button type="button" id="voice-toggle" onclick="toggleVoice()" aria-pressed="true"
+                class="bg-sky-100 hover:bg-sky-200 text-sky-800 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 cursor-pointer">
+                <span id="voice-toggle-icon">🔊</span>
+                <span id="voice-toggle-label" class="hidden sm:inline">목소리 켜짐</span>
+            </button>
+            <div id="header-badge" class="hidden bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-bold">
+                <span id="display-student-name">친구</span>의 연습장
+            </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-3xl">
+
+            <!-- 1. 시작 화면 -->
+            <section id="screen-start" class="bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-6 sm:p-10 text-center animate-pop">
+                <div class="flex justify-center gap-3 mb-4 text-5xl sm:text-6xl animate-float">
+                    <span>🐻</span><span>🐰</span><span>🐶</span><span>🐱</span>
+                </div>
+                <span class="inline-block bg-rose-100 text-rose-600 font-bold px-4 py-1 rounded-full text-sm mb-3">
+                    초등학교 3학년 도덕 · 국어 연계 활동
+                </span>
+                <h2 class="font-jua text-3xl sm:text-4xl text-gray-800 mb-3 leading-snug">
+                    친구의 마음을 읽어주는<br><span class="text-amber-500">따뜻한 말 한마디</span> 연습하기!
+                </h2>
+                <p class="text-gray-600 text-base sm:text-lg mb-8 max-w-lg mx-auto leading-relaxed">
+                    8명의 친구들이 한 명씩 찾아와 이야기를 들려줄 거예요.<br>
+                    친구의 말이 끝나면 어떤 마음일지 잘 생각해보고,<br>
+                    <strong>상황</strong>과 <strong>마음</strong>을 짚어주며 따뜻한 답장을 써 주세요!
+                </p>
+
+                <!-- 공감 꿀팁 카드 -->
+                <div class="bg-amber-50/80 rounded-2xl p-4 sm:p-5 mb-8 text-left max-w-lg mx-auto border-2 border-amber-100">
+                    <p class="font-jua text-amber-700 text-lg mb-2 flex items-center gap-1.5">
+                        <span>💡</span> 공감을 잘하는 3가지 비밀!
+                    </p>
+                    <ul class="space-y-1.5 text-sm sm:text-base text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="bg-amber-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                            <span><strong>상황 짚어주기:</strong> 친구에게 무슨 일이 있었는지 말해주기</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="bg-rose-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                            <span><strong>마음 읽어주기:</strong> 친구의 기분(속상함, 억울함, 신남 등) 알아주기</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="bg-emerald-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                            <span><strong>따뜻한 응원/위로:</strong> 다정한 말투로 격려하거나 힘주기</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 이름 입력 및 시작 버튼 -->
+                <div class="max-w-sm mx-auto space-y-4">
+                    <div>
+                        <label for="student-name-input" class="block text-sm font-bold text-gray-600 mb-1.5">
+                            내 이름을 적어주세요 (안 적어도 괜찮아요!)
+                        </label>
+                        <input type="text" id="student-name-input" maxlength="10" placeholder="예: 김민준"
+                            class="w-full px-4 py-3 text-center text-lg rounded-2xl border-2 border-amber-300 focus:border-amber-500 focus:outline-none bg-amber-50/30 font-bold text-gray-800 placeholder-gray-400">
+                    </div>
+                    <button onclick="startPractice()"
+                        class="w-full bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white font-jua text-2xl py-4 px-8 rounded-2xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                        <span>연습 시작하기</span>
+                        <span>🚀</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. 연습 진행 화면 (대화 장면 형식) -->
+            <section id="screen-practice" class="hidden space-y-4">
+                <!-- 진행도 바 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-amber-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-jua text-amber-600 text-base sm:text-lg" id="progress-label">1번째 친구 이야기 (1 / 8)</span>
+                        <span id="scenario-type-badge" class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-sky-100 text-sky-700">
+                            💬 마음을 직접 말해요
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
+                        <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-rose-400 h-full rounded-full transition-all duration-500" style="width: 12.5%"></div>
+                    </div>
+                </div>
+                <!-- 장면 + 대화 카드 -->
+                <div class="bg-white rounded-3xl shadow-md border-2 border-sky-200 overflow-hidden">
+                    <!-- 장면: 친구가 등장하는 무대 -->
+                    <div id="scene-stage" class="relative h-48 sm:h-56 flex items-end justify-center overflow-hidden">
+                        <div id="scene-deco" class="absolute inset-0 flex items-center justify-around text-6xl sm:text-7xl opacity-20 pointer-events-none select-none" aria-hidden="true"></div>
+                        <div class="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full shadow-sm text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                            <span id="scene-place-icon">🏫</span>
+                            <span id="scene-place">교실</span>
+                        </div>
+                        <button type="button" id="replay-btn" onclick="replayScene()"
+                            class="absolute top-3 right-3 bg-white/90 hover:bg-white px-3 py-1 rounded-full shadow-sm text-sm font-bold text-sky-700 cursor-pointer">
+                            🔁 다시 듣기
+                        </button>
+                        <div id="friend-wrap" class="relative flex flex-col items-center pb-3">
+                            <div class="relative">
+                                <div id="friend-avatar" class="w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-full shadow-lg border-4 border-white flex items-center justify-center text-5xl sm:text-6xl">
+                                    🐧
+                                </div>
+                                <div id="friend-mood" class="absolute -top-1 -right-3 w-10 h-10 bg-white rounded-full shadow border-2 border-amber-200 flex items-center justify-center text-2xl">
+                                    😳
+                                </div>
+                            </div>
+                            <span id="friend-name" class="mt-1.5 font-jua text-lg text-sky-800 bg-white/90 px-3 py-0.5 rounded-full shadow-sm">
+                                펭귄 준서
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 대화: 친구의 말과 내 답장이 차례로 쌓임 -->
+                    <div id="chat-log" onclick="skipTyping()" class="p-4 sm:p-5 space-y-3 min-h-[9rem] bg-sky-50/40" aria-live="polite"></div>
+
+                    <div id="hidden-emotion-hint" class="hidden mx-4 sm:mx-5 mb-4 px-3 py-2 rounded-xl bg-amber-50 border border-dashed border-amber-300 items-center gap-2 text-sm text-amber-700 font-bold">
+                        <span>🔍</span>
+                        <span>힌트: 친구가 어떤 마음인지 말하지 않았어요. 표정과 있었던 일을 잘 살펴보세요!</span>
+                    </div>
+                </div>
+
+                <!-- 학생 답변 입력 영역 -->
+                <div id="input-area" class="hidden bg-white rounded-3xl p-5 sm:p-7 shadow-md border-2 border-amber-200">
+                    <!-- 타자 / 마이크 입력 방식 선택 탭 -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b-2 border-amber-100">
+                        <label for="student-reply" class="font-jua text-xl text-gray-800 flex items-center gap-2">
+                            <span>✏️</span>
+                            <span id="prompt-instruction">친구에게 해주고 싶은 공감의 말을 전해요!</span>
+                        </label>
+                        <div class="inline-flex bg-amber-100/80 p-1.5 rounded-2xl self-start sm:self-auto" role="group" aria-label="입력 방식 선택">
+                            <button type="button" id="mode-btn-keyboard" onclick="setInputMode('keyboard')"
+                                class="px-3.5 py-2 rounded-xl font-jua text-sm sm:text-base transition flex items-center gap-1.5 bg-white text-amber-700 shadow-sm cursor-pointer">
+                                <span>⌨️</span>
+                                <span>타자로 쓰기</span>
+                            </button>
+                            <button type="button" id="mode-btn-mic" onclick="setInputMode('mic')"
+                                class="px-3.5 py-2 rounded-xl font-jua text-sm sm:text-base transition flex items-center gap-1.5 text-amber-800/70 hover:text-amber-800 cursor-pointer">
+                                <span>🎤</span>
+                                <span>마이크로 말하기</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 마이크 모드 전용 컨트롤 패널 -->
+                    <div id="mic-control-panel" class="hidden mb-4 bg-rose-50/80 border-2 border-rose-200 rounded-2xl p-4 sm:p-5 text-center animate-pop">
+                        <div class="flex flex-col items-center justify-center gap-3">
+                            <button type="button" id="mic-toggle-btn" onclick="toggleRecording()"
+                                class="bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-jua text-lg sm:text-xl py-3 px-7 rounded-full shadow-md transition transform active:scale-95 flex items-center gap-2.5 cursor-pointer">
+                                <span id="mic-btn-icon" class="text-2xl">🎤</span>
+                                <span id="mic-btn-label">말하기 시작</span>
+                            </button>
+
+                            <!-- 녹음 중 시각적 파형 & 상태 안내 -->
+                            <div id="mic-status-box" class="flex items-center justify-center gap-2 min-h-[28px]">
+                                <div id="mic-wave-bars" class="hidden items-center gap-1 h-6">
+                                    <span class="wave-bar"></span>
+                                    <span class="wave-bar"></span>
+                                    <span class="wave-bar"></span>
+                                    <span class="wave-bar"></span>
+                                    <span class="wave-bar"></span>
+                                </div>
+                                <p id="mic-status-text" class="text-sm sm:text-base font-bold text-rose-700">
+                                    버튼을 누르고 친구에게 해줄 말을 또박또박 말해 보세요!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-2.5 border-t border-rose-200/70 flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm text-rose-800 font-bold">
+                            <span>✨ 말한 내용이 아래 네모 칸에 실시간으로 써져요!</span>
+                            <span class="bg-white px-2.5 py-0.5 rounded-full border border-rose-200 text-rose-600">틀린 글자는 직접 눌러서 고칠 수 있어요 ✏️</span>
+                        </div>
+                    </div>
+
+                    <p id="keyboard-guide-text" class="text-sm text-gray-500 mb-3">
+                        예시) "~해서 정말 ~했겠다. 나라도 그랬을 것 같아. 다음에는 ~해보자!"
+                    </p>
+
+                    <!-- 실시간 음성 인식 결과 및 직접 수정 가능한 텍스트 입력창 -->
+                    <div class="relative">
+                        <textarea id="student-reply" rows="3" maxlength="250"
+                            placeholder="여기에 친구에게 건넬 따뜻한 말을 적어주세요..."
+                            class="w-full p-4 text-base sm:text-lg rounded-2xl border-2 border-gray-200 focus:border-amber-400 focus:outline-none resize-none bg-amber-50/20 text-gray-800 leading-relaxed transition-colors"></textarea>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
+                        <div class="flex items-center gap-3 self-end sm:self-center">
+                            <span id="char-count" class="text-xs text-gray-400">0 / 250자</span>
+                            <button type="button" onclick="clearReplyText()"
+                                class="text-xs font-bold text-gray-500 hover:text-rose-500 bg-gray-100 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition cursor-pointer">
+                                🗑️ 지우기
+                            </button>
+                        </div>
+                        <button id="submit-btn" onclick="submitResponse()"
+                            class="w-full sm:w-auto bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-jua text-xl py-3.5 px-8 rounded-2xl shadow-md transform transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                            <span>마음 전하기</span>
+                            <span>💌</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- 피드백 결과 화면 -->
+                <div id="feedback-area" class="hidden space-y-4 animate-pop">
+                    <!-- 점수 및 친구 반응 -->
+                    <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-lg border-4 border-emerald-200">
+                        <div class="flex flex-col sm:flex-row items-center justify-between border-b-2 border-gray-100 pb-4 mb-4 gap-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl">🎉</span>
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-600 block">공감 분석 완료!</span>
+                                    <h3 class="font-jua text-2xl text-gray-800">내 공감 점수는?</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-emerald-50 px-5 py-2 rounded-2xl border border-emerald-200">
+                                <span id="feedback-score" class="font-jua text-3xl sm:text-4xl text-emerald-600">90점</span>
+                                <span id="feedback-hearts" class="text-xl tracking-tighter">❤️❤️❤️❤️🤍</span>
+                            </div>
+                        </div>
+
+                        <!-- 3가지 세부 점수 뱃지 -->
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-5 text-center">
+                            <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-100">
+                                <div class="text-xs text-gray-500 font-bold">👂 상황 듣기</div>
+                                <div id="score-situation" class="font-jua text-lg text-amber-600 mt-0.5">30 / 35점</div>
+                            </div>
+                            <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                                <div class="text-xs text-gray-500 font-bold">💖 마음 찾기</div>
+                                <div id="score-emotion" class="font-jua text-lg text-rose-600 mt-0.5">35 / 35점</div>
+                            </div>
+                            <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-100">
+                                <div class="text-xs text-gray-500 font-bold">🌷 따뜻한 말</div>
+                                <div id="score-warmth" class="font-jua text-lg text-sky-600 mt-0.5">25 / 30점</div>
+                            </div>
+                        </div>
+
+                        <!-- 선생님의 칭찬과 꿀팁 -->
+                        <div class="space-y-3 bg-amber-50/50 rounded-2xl p-4 sm:p-5 border border-amber-200">
+                            <div>
+                                <span class="inline-block bg-amber-400 text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-1">
+                                    🌟 선생님의 칭찬
+                                </span>
+                                <p id="feedback-praise" class="text-gray-700 text-sm sm:text-base leading-relaxed">
+                                    친구가 겪은 속상한 일을 잘 들어주고 마음을 따뜻하게 위로해 주었구나!
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-amber-200/60">
+                                <span class="inline-block bg-sky-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-1">
+                                    💡 이렇게 말해보면 더 좋아요!
+                                </span>
+                                <p id="feedback-example" class="text-sky-900 font-bold text-sm sm:text-base bg-white p-3 rounded-xl border border-sky-100 mt-1">
+                                    "체육 시간에 친구가 반칙을 해서 정말 짜증 났겠다. 나라도 화가 났을 거야. 다음에는 심판 선생님께 말씀드려 보자!"
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 다음 버튼 -->
+                        <div class="mt-6 text-center">
+                            <button id="next-btn" onclick="nextScenario()"
+                                class="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-jua text-xl py-3.5 px-10 rounded-2xl shadow-md transform transition active:scale-95 inline-flex items-center justify-center gap-2 cursor-pointer">
+                                <span id="next-btn-text">다음 친구 만나러 가기</span>
+                                <span>➡️</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 최종 평가지 (상장) 화면 -->
+            <section id="screen-result" class="hidden animate-pop space-y-6">
+                <!-- 상장 카드 영역 -->
+                <div id="certificate-card" class="bg-white rounded-3xl p-6 sm:p-10 shadow-2xl border-8 border-double border-amber-300 relative overflow-hidden">
+                    <!-- 장식 코너 -->
+                    <div class="absolute top-3 left-3 text-2xl opacity-60">🌸</div>
+                    <div class="absolute top-3 right-3 text-2xl opacity-60">🌸</div>
+                    <div class="absolute bottom-3 left-3 text-2xl opacity-60">✨</div>
+                    <div class="absolute bottom-3 right-3 text-2xl opacity-60">✨</div>
+
+                    <div class="text-center border-b-2 border-amber-100 pb-6 mb-6">
+                        <span class="inline-block bg-amber-100 text-amber-800 font-bold px-4 py-1 rounded-full text-sm mb-2">
+                            공감 대화 연습 수료증
+                        </span>
+                        <h2 class="font-jua text-3xl sm:text-4xl text-gray-800 mb-2">
+                            🏆 우리 반 공감 마스터 상장
+                        </h2>
+                        <p class="text-lg sm:text-xl text-gray-700 mt-3">
+                            이름: <strong id="cert-student-name" class="text-2xl text-amber-600 underline decoration-amber-300 decoration-4 underline-offset-4">친구</strong>
+                        </p>
+                    </div>
+
+                    <!-- 종합 점수 및 칭호 -->
+                    <div class="bg-gradient-to-r from-amber-50 via-rose-50 to-sky-50 rounded-2xl p-5 sm:p-6 mb-6 text-center border-2 border-amber-200">
+                        <div class="text-5xl mb-2" id="cert-badge-icon">👑</div>
+                        <div class="text-sm font-bold text-gray-500">나의 공감 레벨 칭호</div>
+                        <div id="cert-title" class="font-jua text-2xl sm:text-3xl text-rose-500 my-1">
+                            따뜻한 마음 요정
+                        </div>
+                        <div class="inline-block bg-white px-5 py-1.5 rounded-full shadow-sm border border-amber-200 mt-2">
+                            <span class="text-gray-600 font-bold text-sm">평균 공감 점수: </span>
+                            <span id="cert-avg-score" class="font-jua text-2xl text-amber-600">92점</span>
+                        </div>
+                    </div>
+
+                    <!-- 3가지 영역별 그래프 -->
+                    <div class="mb-6">
+                        <h3 class="font-jua text-xl text-gray-800 mb-3 flex items-center gap-2">
+                            <span>📊</span> 나의 공감 능력 그래프
+                        </h3>
+                        <div class="space-y-3.5 bg-gray-50/80 p-4 sm:p-5 rounded-2xl border border-gray-100">
+                            <!-- 상황 듣기 -->
+                            <div>
+                                <div class="flex justify-between text-sm font-bold mb-1">
+                                    <span class="text-amber-700">👂 상황 잘 짚어주기 (친구의 이야기 듣기)</span>
+                                    <span id="bar-situation-text" class="text-amber-600">90%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                    <div id="bar-situation" class="bg-amber-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- 마음 찾기 -->
+                            <div>
+                                <div class="flex justify-between text-sm font-bold mb-1">
+                                    <span class="text-rose-700">💖 마음 정확히 읽어주기 (숨은 감정 찾기)</span>
+                                    <span id="bar-emotion-text" class="text-rose-600">85%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                    <div id="bar-emotion" class="bg-rose-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- 따뜻한 말 -->
+                            <div>
+                                <div class="flex justify-between text-sm font-bold mb-1">
+                                    <span class="text-sky-700">🌷 따뜻하게 위로하고 응원하기</span>
+                                    <span id="bar-warmth-text" class="text-sky-600">95%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                    <div id="bar-warmth" class="bg-sky-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI 선생님의 종합 평가 -->
+                    <div class="bg-amber-50/80 rounded-2xl p-5 border-2 border-amber-200 mb-6">
+                        <h3 class="font-jua text-lg text-amber-800 mb-2 flex items-center gap-1.5">
+                            <span>💌</span> 선생님의 종합 칭찬 편지
+                        </h3>
+                        <p id="cert-summary" class="text-gray-700 text-base leading-relaxed break-keep">
+                            8명의 친구들 이야기를 끝까지 귀 기울여 들어주고 따뜻한 말로 위로해 주어서 정말 대단해요! 친구의 기분을 잘 헤아려 주는 멋진 마음을 가졌네요.
+                        </p>
+                    </div>
+
+                    <!-- 내가 남긴 기록 요약 토글 -->
+                    <div class="text-center text-sm text-gray-500">
+                        <p>발급일: <span id="cert-date"></span> · 마음 톡톡! 우리 반 공감 대화 연습소</p>
+                    </div>
+                </div>
+
+                <!-- 하단 액션 버튼들 -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center no-print">
+                    <button onclick="saveAsImage()"
+                        class="bg-amber-500 hover:bg-amber-600 text-white font-jua text-lg py-3.5 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                        <span>📸 평가지 이미지 저장</span>
+                    </button>
+                    <button onclick="window.print()"
+                        class="bg-sky-500 hover:bg-sky-600 text-white font-jua text-lg py-3.5 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                        <span>🖨️ 인쇄하기</span>
+                    </button>
+                    <button onclick="restartApp()"
+                        class="bg-white hover:bg-gray-100 text-gray-700 border-2 border-gray-300 font-jua text-lg py-3.5 px-6 rounded-2xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+                        <span>🔄 다시 연습하기</span>
+                    </button>
+                </div>
+
+                <!-- 나의 대화 기록 다시보기 -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-gray-100 no-print">
+                    <h3 class="font-jua text-xl text-gray-800 mb-4 flex items-center gap-2">
+                        <span>📝</span> 내가 친구들에게 건넨 따뜻한 말 모음
+                    </h3>
+                    <div id="history-list" class="space-y-3">
+                        <!-- 자바스크립트로 채워짐 -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 알림 메시지 박스 (alert 대신 사용) -->
+    <div id="toast-box" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl font-bold text-sm sm:text-base z-50 transition-all duration-300 opacity-0 pointer-events-none">
+        메시지 내용
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 8가지 시나리오 데이터 구성
+        // ==========================================
+        const scenarios = [
+            {
+                id: 1,
+                type: 'direct', // 감정 직접 표현
+                friendName: '펭귄 준서',
+                callName: '준서',
+                avatar: '🐧',
+                mood: '😳',
+                pitch: 1.3,
+                place: '급식실',
+                placeIcon: '🍚',
+                sceneBg: 'linear-gradient(180deg, #FFE3C2 0%, #FFF4E0 100%)',
+                deco: ['🍚', '🥄', '🥛'],
+                emotionLabel: '창피함·속상함',
+                hiddenEmotion: false,
+                situationSummary: '급식실에서 식판을 들고 가다 넘어져 국을 쏟았는데 친구들이 웃어서 창피함',
+                intro: '있잖아, 나 오늘 급식실에서 큰일 났었어.',
+                lines: [
+                    '식판을 들고 가다가 넘어져서 국을 다 쏟았거든.',
+                    '친구들이 그걸 보고 막 웃어서 너무 창피했어.'
+                ],
+                keywords: ['급식', '식판', '넘어', '국을', '쏟', '웃어', '창피', '부끄', '속상', '괜찮', '나라도', '같이'],
+                sampleAnswer: '급식실에서 넘어져서 국을 쏟았는데 친구들이 웃어서 정말 창피하고 속상했겠다. 누구나 그런 실수를 할 수 있어, 괜찮아! 다음에는 내가 같이 가 줄게.'
+            },
+            {
+                id: 2,
+                type: 'hidden', // 감정 숨김 (실망, 속상함)
+                friendName: '사자 유나',
+                callName: '유나',
+                avatar: '🦁',
+                mood: '😞',
+                pitch: 1.45,
+                place: '교실',
+                placeIcon: '📝',
+                sceneBg: 'linear-gradient(180deg, #DCEBFF 0%, #F3F8FF 100%)',
+                deco: ['📝', '✏️', '📚'],
+                emotionLabel: '실망·속상함',
+                hiddenEmotion: true,
+                situationSummary: '백 점을 받으려고 일주일 동안 매일 연습한 받아쓰기에서 두 개를 틀림',
+                intro: '나 오늘 받아쓰기 시험 봤는데...',
+                lines: [
+                    '백 점 받으려고 일주일 동안 매일 연습했거든.',
+                    '그런데 두 개나 틀렸어.'
+                ],
+                keywords: ['받아쓰기', '시험', '연습', '백 점', '100점', '틀렸', '틀려', '노력', '실망', '속상', '아쉽', '다음', '대단'],
+                sampleAnswer: '백 점 받으려고 매일 연습했는데 두 개 틀려서 많이 실망하고 속상했겠다. 그래도 일주일 동안 열심히 노력한 네가 정말 대단해. 다음에는 꼭 백 점 받을 수 있을 거야!'
+            },
+            {
+                id: 3,
+                type: 'direct', // 감정 직접 표현
+                friendName: '코알라 시우',
+                callName: '시우',
+                avatar: '🐨',
+                mood: '😢',
+                pitch: 1.1,
+                place: '복도',
+                placeIcon: '🚪',
+                sceneBg: 'linear-gradient(180deg, #E5E0FF 0%, #F6F4FF 100%)',
+                deco: ['🚪', '🎒', '💌'],
+                emotionLabel: '슬픔·아쉬움',
+                hiddenEmotion: false,
+                situationSummary: '제일 친한 친구가 다음 주에 전학을 가서 자주 못 보게 되어 슬픔',
+                intro: '나 어제 엄청 슬픈 소식을 들었어.',
+                lines: [
+                    '나랑 제일 친한 친구가 다음 주에 전학을 간대.',
+                    '이제 자주 못 볼 것 같아서 너무 슬퍼.'
+                ],
+                keywords: ['친한 친구', '전학', '못 볼', '못 보', '편지', '연락', '슬프', '슬펐', '슬플', '아쉽', '보고 싶', '같이'],
+                sampleAnswer: '제일 친한 친구가 전학을 가서 자주 못 보게 되니까 정말 슬프겠다. 나라도 눈물이 났을 것 같아. 전학 가기 전에 같이 편지를 써서 마음을 전해 보자!'
+            },
+            {
+                id: 4,
+                type: 'hidden', // 감정 숨김 (서운함, 속상함)
+                friendName: '호랑이 예준',
+                callName: '예준',
+                avatar: '🐯',
+                mood: '😔',
+                pitch: 1.0,
+                place: '모둠 자리',
+                placeIcon: '🧩',
+                sceneBg: 'linear-gradient(180deg, #FFE0E6 0%, #FFF3F5 100%)',
+                deco: ['🧩', '💬', '📋'],
+                emotionLabel: '서운함·속상함',
+                hiddenEmotion: true,
+                situationSummary: '모둠 활동에서 의견을 세 번이나 말했는데 아무도 들어 주지 않고 다른 친구 의견으로만 정함',
+                intro: '아까 모둠 활동 시간에 말이야.',
+                lines: [
+                    '내가 생각한 의견을 세 번이나 말했거든.',
+                    '그런데 아무도 안 들어 주고, 다른 친구 의견으로만 정해 버렸어.'
+                ],
+                keywords: ['모둠', '의견', '세 번', '안 들어', '들어 주', '서운', '속상', '무시', '화가', '화났', '같이'],
+                sampleAnswer: '의견을 세 번이나 말했는데 아무도 안 들어 줘서 정말 서운하고 속상했겠다. 나는 네 의견이 궁금해, 나한테 이야기해 줄래? 다음에는 내가 같이 들어 보자고 말해 줄게.'
+            },
+            {
+                id: 5,
+                type: 'direct', // 감정 직접 표현
+                friendName: '햄스터 채원',
+                callName: '채원',
+                avatar: '🐹',
+                mood: '🤩',
+                pitch: 1.5,
+                place: '하굣길',
+                placeIcon: '🎒',
+                sceneBg: 'linear-gradient(180deg, #D5F5E3 0%, #F1FBF5 100%)',
+                deco: ['⛺', '🌟', '🌲'],
+                emotionLabel: '설렘·기대',
+                hiddenEmotion: false,
+                situationSummary: '이번 주말에 가족과 처음으로 캠핑을 가서 텐트에서 자고 별을 볼 생각에 설렘',
+                intro: '나 이번 주말이 너무너무 기다려져!',
+                lines: [
+                    '가족이랑 처음으로 캠핑을 가기로 했거든.',
+                    '텐트에서 자고 별도 볼 거라서 벌써부터 설레!'
+                ],
+                keywords: ['주말', '가족', '캠핑', '텐트', '별', '처음', '설레', '설렜', '기대', '신나', '좋겠', '재미있게'],
+                sampleAnswer: '가족이랑 처음으로 캠핑을 가서 텐트에서 자고 별도 본다니 정말 설레고 기대되겠다! 재미있게 잘 다녀와서 나한테도 이야기해 줘!'
+            },
+            {
+                id: 6,
+                type: 'hidden', // 감정 숨김 (아쉬움, 실망)
+                friendName: '부엉이 다은',
+                callName: '다은',
+                avatar: '🦉',
+                mood: '😞',
+                pitch: 1.25,
+                place: '비 오는 창가',
+                placeIcon: '☔',
+                sceneBg: 'linear-gradient(180deg, #CFD8E3 0%, #EEF2F6 100%)',
+                deco: ['🌧️', '☔', '🌧️'],
+                emotionLabel: '아쉬움·실망',
+                hiddenEmotion: true,
+                situationSummary: '한 달 전부터 기다린 현장 체험 학습이 비 때문에 취소됨',
+                intro: '창밖 좀 봐... 비가 엄청 많이 와.',
+                lines: [
+                    '내일이 한 달 전부터 기다린 현장 체험 학습 날이잖아.',
+                    '그런데 비 때문에 취소됐대.'
+                ],
+                keywords: ['현장 체험', '체험 학습', '한 달', '기다', '비 때문', '비가', '취소', '아쉽', '아쉬', '실망', '속상', '다음', '같이'],
+                sampleAnswer: '한 달 전부터 기다린 현장 체험 학습이 비 때문에 취소돼서 정말 아쉽고 실망했겠다. 나도 너무 아쉬워. 다음에 날씨 좋은 날 꼭 같이 가자!'
+            },
+            {
+                id: 7,
+                type: 'hidden', // 감정 숨김 (뿌듯함, 자랑스러움)
+                friendName: '개구리 태윤',
+                callName: '태윤',
+                avatar: '🐸',
+                mood: '😄',
+                pitch: 1.35,
+                place: '교실 앞',
+                placeIcon: '🏫',
+                sceneBg: 'linear-gradient(180deg, #FFF3B8 0%, #FFFBE6 100%)',
+                deco: ['👛', '👏', '🌟'],
+                emotionLabel: '뿌듯함·자랑스러움',
+                hiddenEmotion: true,
+                situationSummary: '복도에서 주운 지갑을 선생님께 갖다 드려 주인을 찾았고, 선생님이 친구들 앞에서 칭찬해 주심',
+                intro: '나 오늘 엄청난 일이 있었어!',
+                lines: [
+                    '복도에서 지갑을 주워서 선생님께 갖다 드렸거든.',
+                    '주인을 찾았다고 선생님이 친구들 앞에서 칭찬해 주셨어!'
+                ],
+                keywords: ['복도', '지갑', '주워', '주운', '선생님', '주인', '칭찬', '뿌듯', '자랑', '기쁘', '기분', '대단', '멋지', '멋져', '최고'],
+                sampleAnswer: '복도에서 주운 지갑을 선생님께 갖다 드려서 칭찬까지 받았다니 정말 뿌듯하고 기분 좋았겠다! 주인을 찾아 준 네 마음이 정말 멋져, 최고야!'
+            },
+            {
+                id: 8,
+                type: 'direct', // 감정 직접 표현
+                friendName: '송아지 하린',
+                callName: '하린',
+                avatar: '🐮',
+                mood: '😟',
+                pitch: 1.2,
+                place: '교실',
+                placeIcon: '🖍️',
+                sceneBg: 'linear-gradient(180deg, #FFE5F1 0%, #FFF5FA 100%)',
+                deco: ['🖍️', '🎨', '📦'],
+                emotionLabel: '미안함·걱정',
+                hiddenEmotion: false,
+                situationSummary: '친구에게 빌린 색연필을 잃어버려서 친구가 화낼까 봐 미안하고 걱정됨',
+                intro: '어떡하지... 나 큰 실수를 했어.',
+                lines: [
+                    '친구한테 빌린 색연필을 잃어버렸거든.',
+                    '친구가 화낼까 봐 너무 미안하고 걱정돼.'
+                ],
+                keywords: ['빌린', '색연필', '잃어버', '화낼', '솔직', '사과', '찾아', '미안', '걱정', '불안', '같이', '괜찮'],
+                sampleAnswer: '친구한테 빌린 색연필을 잃어버려서 많이 미안하고 걱정되겠다. 솔직하게 말하고 사과하면 친구도 이해해 줄 거야. 내가 같이 찾아 줄게!'
+            }
+        ];
+
+        // 기록·채점에 쓰는 '친구가 한 말' 전체 문장
+        scenarios.forEach((s) => {
+            s.dialogue = s.lines.join(' ');
+        });
+
+        // ==========================================
+        // 2. 상태 관리 변수
+        // ==========================================
+        let studentName = '친구';
+        let currentIndex = 0;
+        let resultsHistory = []; // 각 문항별 결과 저장
+        const apiKey = ""; // 런타임 환경에서 자동 제공됨
+
+        // 입력 모드 및 음성 인식(STT) 상태 변수
+        let inputMode = 'keyboard'; // 'keyboard' | 'mic'
+        let recognition = null;
+        let isRecording = false;
+        let committedText = ''; // 확정된 텍스트 누적분
+
+        // ==========================================
+        // 3. 유틸리티 함수 (알림창 등)
+        // ==========================================
+        function showToast(message) {
+            const toast = document.getElementById('toast-box');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // ==========================================
+        // 3-1. 타자 / 마이크 모드 전환 및 Web Speech API
+        // ==========================================
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                return null;
+            }
+
+            const rec = new SpeechRecognition();
+            rec.lang = 'ko-KR';
+            rec.interimResults = true;
+            rec.continuous = true;
+
+            rec.onstart = () => {
+                isRecording = true;
+                // 녹음 시작 시 현재 textarea에 이미 적혀 있는 내용을 기준점으로 저장
+                const currentVal = document.getElementById('student-reply').value.trim();
+                committedText = currentVal ? currentVal + ' ' : '';
+                updateMicUI(true);
+            };
+
+            rec.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    committedText += finalTranscript.trim() + ' ';
+                }
+
+                // 실시간으로 타이핑되듯 textarea에 반영 (최대 250자 제한 준수)
+                const textarea = document.getElementById('student-reply');
+                const combinedText = (committedText + interimTranscript).slice(0, 250);
+                textarea.value = combinedText;
+                document.getElementById('char-count').textContent = `${textarea.value.length} / 250자`;
+            };
+
+            rec.onerror = (event) => {
+                console.warn('Speech recognition error:', event.error);
+                isRecording = false;
+                updateMicUI(false);
+
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    showToast('마이크 사용 권한이 꺼져 있어요! 타자로 쓰기 모드로 바꿀게요 ⌨️');
+                    setInputMode('keyboard');
+                } else if (event.error === 'no-speech') {
+                    showToast('목소리가 들리지 않았어요. 마이크 버튼을 다시 누르고 말해 보세요! 🎤');
+                } else if (event.error !== 'aborted') {
+                    showToast('음성 인식 중 잠시 문제가 생겼어요. 다시 누르거나 타자로 고쳐보세요!');
+                }
+            };
+
+            rec.onend = () => {
+                // 사용자가 직접 멈춤을 누르지 않았는데 브라우저가 자동 종료한 경우 처리
+                if (isRecording) {
+                    isRecording = false;
+                    updateMicUI(false);
+                }
+                // 끝 공백 정리
+                const textarea = document.getElementById('student-reply');
+                textarea.value = textarea.value.trim();
+                committedText = textarea.value ? textarea.value + ' ' : '';
+                document.getElementById('char-count').textContent = `${textarea.value.length} / 250자`;
+            };
+
+            return rec;
+        }
+
+        function updateCharCount() {
+            const textarea = document.getElementById('student-reply');
+            document.getElementById('char-count').textContent = `${textarea.value.length} / 250자`;
+        }
+
+        function updateMicUI(recording) {
+            const btn = document.getElementById('mic-toggle-btn');
+            const waveBars = document.getElementById('mic-wave-bars');
+            const textarea = document.getElementById('student-reply');
+
+            btn.classList.toggle('mic-recording-pulse', recording);
+            document.getElementById('mic-btn-icon').textContent = recording ? '⏹️' : '🎤';
+            document.getElementById('mic-btn-label').textContent = recording ? '말하기 멈추기' : '말하기 시작';
+            waveBars.classList.toggle('hidden', !recording);
+            waveBars.classList.toggle('flex', recording);
+            document.getElementById('mic-status-text').textContent = recording
+                ? '듣고 있어요! 다 말했으면 버튼을 다시 눌러 주세요.'
+                : '버튼을 누르고 친구에게 해줄 말을 또박또박 말해 보세요!';
+            textarea.classList.toggle('border-rose-300', recording);
+        }
+
+        function stopRecording() {
+            if (recognition && isRecording) {
+                isRecording = false;
+                try { recognition.stop(); } catch (e) { /* 이미 멈춘 경우 무시 */ }
+                updateMicUI(false);
+            }
+        }
+
+        function setInputMode(mode) {
+            const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+            if (mode === 'mic' && !supported) {
+                showToast('이 브라우저에서는 마이크로 말하기를 쓸 수 없어요. 타자로 써 주세요! ⌨️');
+                mode = 'keyboard';
+            }
+            if (mode === 'keyboard') {
+                stopRecording();
+            }
+            inputMode = mode;
+
+            const activeClasses = ['bg-white', 'text-amber-700', 'shadow-sm'];
+            const inactiveClasses = ['text-amber-800/70', 'hover:text-amber-800'];
+            const keyboardBtn = document.getElementById('mode-btn-keyboard');
+            const micBtn = document.getElementById('mode-btn-mic');
+            const isMic = mode === 'mic';
+
+            (isMic ? micBtn : keyboardBtn).classList.add(...activeClasses);
+            (isMic ? micBtn : keyboardBtn).classList.remove(...inactiveClasses);
+            (isMic ? keyboardBtn : micBtn).classList.remove(...activeClasses);
+            (isMic ? keyboardBtn : micBtn).classList.add(...inactiveClasses);
+
+            document.getElementById('mic-control-panel').classList.toggle('hidden', !isMic);
+            document.getElementById('keyboard-guide-text').classList.toggle('hidden', isMic);
+        }
+
+        function toggleRecording() {
+            if (!recognition) {
+                recognition = initSpeechRecognition();
+            }
+            if (!recognition) {
+                showToast('이 브라우저에서는 마이크로 말하기를 쓸 수 없어요. 타자로 써 주세요! ⌨️');
+                setInputMode('keyboard');
+                return;
+            }
+            if (isRecording) {
+                stopRecording();
+                return;
+            }
+            try {
+                recognition.start();
+            } catch (e) {
+                console.warn('Speech recognition start failed:', e);
+                showToast('마이크를 켜지 못했어요. 잠시 뒤에 다시 눌러 보세요!');
+            }
+        }
+
+        function clearReplyText() {
+            document.getElementById('student-reply').value = '';
+            committedText = '';
+            updateCharCount();
+        }
+
+        // ==========================================
+        // 4. 대화 장면 재생 (캐릭터 등장 → 한 문장씩 말하기 → 답장 쓰기)
+        // ==========================================
+        let phase = 'idle';        // 'idle' | 'playing' | 'answering' | 'evaluating' | 'feedback'
+        let sceneToken = 0;        // 장면이 바뀌면 이전 장면의 재생을 멈추기 위한 번호
+        let skipRequested = false; // 대화 칸을 누르면 글자가 한 번에 나옴
+        let voiceOn = true;
+        let finishCurrentSpeech = null;
+
+        const TYPE_SPEED_MS = 45;
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        function showScreen(name) {
+            ['start', 'practice', 'result'].forEach((key) => {
+                document.getElementById(`screen-${key}`).classList.toggle('hidden', key !== name);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ----- 목소리 (브라우저 읽어주기 기능) -----
+        function speechSupported() {
+            return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+        }
+
+        function cancelSpeech() {
+            if (speechSupported()) {
+                window.speechSynthesis.cancel();
+            }
+            if (finishCurrentSpeech) {
+                finishCurrentSpeech();
+            }
+        }
+
+        function speak(text, pitch) {
+            return new Promise((resolve) => {
+                if (!voiceOn || !speechSupported()) {
+                    resolve();
+                    return;
+                }
+                const voices = window.speechSynthesis.getVoices();
+                const koreanVoice = voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('ko'));
+                // 목소리 목록은 있는데 한국어 목소리가 없으면 읽지 않음 (이상한 발음 방지)
+                if (voices.length > 0 && !koreanVoice) {
+                    resolve();
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                if (koreanVoice) utterance.voice = koreanVoice;
+                utterance.rate = 1;
+                utterance.pitch = pitch || 1.2;
+
+                let done = false;
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    clearTimeout(safetyTimer);
+                    if (finishCurrentSpeech === finish) finishCurrentSpeech = null;
+                    resolve();
+                };
+                // 읽기가 끝났다는 신호가 오지 않는 기기를 위한 안전장치
+                const safetyTimer = setTimeout(finish, text.length * 280 + 3000);
+                utterance.onend = finish;
+                utterance.onerror = finish;
+                finishCurrentSpeech = finish;
+                try {
+                    window.speechSynthesis.speak(utterance);
+                } catch (e) {
+                    finish();
+                }
+            });
+        }
+
+        function toggleVoice() {
+            voiceOn = !voiceOn;
+            if (!voiceOn) cancelSpeech();
+            document.getElementById('voice-toggle-icon').textContent = voiceOn ? '🔊' : '🔇';
+            document.getElementById('voice-toggle-label').textContent = voiceOn ? '목소리 켜짐' : '목소리 꺼짐';
+            document.getElementById('voice-toggle').setAttribute('aria-pressed', String(voiceOn));
+        }
+
+        // ----- 말풍선 -----
+        function addFriendBubble(scenario) {
+            const row = document.createElement('div');
+            row.className = 'flex items-start gap-2 animate-pop';
+
+            const icon = document.createElement('span');
+            icon.className = 'text-2xl sm:text-3xl shrink-0 mt-1';
+            icon.textContent = scenario.avatar;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bg-white border-2 border-sky-100 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm max-w-[85%]';
+
+            const text = document.createElement('p');
+            text.className = 'text-base sm:text-lg text-gray-800 font-bold leading-relaxed break-keep';
+
+            bubble.appendChild(text);
+            row.append(icon, bubble);
+            document.getElementById('chat-log').appendChild(row);
+            return { row, text };
+        }
+
+        function addStudentBubble(replyText) {
+            const row = document.createElement('div');
+            row.className = 'flex items-start justify-end gap-2 animate-pop';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bg-amber-100 border-2 border-amber-200 rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm max-w-[85%]';
+
+            const text = document.createElement('p');
+            text.className = 'text-base sm:text-lg text-gray-800 font-bold leading-relaxed break-keep';
+            text.textContent = replyText;
+
+            const label = document.createElement('span');
+            label.className = 'font-jua text-sm text-amber-700 bg-white border border-amber-200 rounded-full px-2 py-0.5 shrink-0 mt-1';
+            label.textContent = '나';
+
+            bubble.appendChild(text);
+            row.append(bubble, label);
+            document.getElementById('chat-log').appendChild(row);
+        }
+
+        function addTypingIndicator(scenario) {
+            const { row, text } = addFriendBubble(scenario);
+            text.className = 'flex items-center gap-1.5 py-1.5';
+            for (let i = 0; i < 3; i += 1) {
+                const dot = document.createElement('span');
+                dot.className = 'typing-dot';
+                text.appendChild(dot);
+            }
+            const label = document.createElement('span');
+            label.className = 'sr-only';
+            label.textContent = '친구가 답장을 쓰고 있어요';
+            text.appendChild(label);
+            return row;
+        }
+
+        async function typeInto(element, fullText, token) {
+            element.classList.add('typing-caret');
+            for (let i = 1; i <= fullText.length; i += 1) {
+                if (token !== sceneToken) return;
+                if (skipRequested) break;
+                element.textContent = fullText.slice(0, i);
+                await sleep(TYPE_SPEED_MS);
+            }
+            element.textContent = fullText;
+            element.classList.remove('typing-caret');
+        }
+
+        // 친구가 한 문장을 말함: 글자가 타자 치듯 나오고, 목소리로도 읽어 줌
+        async function friendSays(lineText, token) {
+            const scenario = scenarios[currentIndex];
+            const avatar = document.getElementById('friend-avatar');
+            const { text } = addFriendBubble(scenario);
+
+            avatar.classList.add('char-talking');
+            const speaking = speak(lineText, scenario.pitch);
+            await typeInto(text, lineText, token);
+            if (skipRequested || token !== sceneToken) {
+                cancelSpeech();
+            }
+            await speaking;
+            avatar.classList.remove('char-talking');
+        }
+
+        function skipTyping() {
+            if (phase === 'playing' || phase === 'evaluating') {
+                skipRequested = true;
+                cancelSpeech();
+            }
+        }
+
+        function startPractice() {
+            const typedName = document.getElementById('student-name-input').value.trim();
+            studentName = typedName || '친구';
+            currentIndex = 0;
+            resultsHistory = [];
+
+            document.getElementById('display-student-name').textContent = studentName;
+            document.getElementById('header-badge').classList.remove('hidden');
+
+            showScreen('practice');
+            loadScenario();
+        }
+
+        async function loadScenario(keepReply = false) {
+            const s = scenarios[currentIndex];
+            const num = currentIndex + 1;
+            const total = scenarios.length;
+            const token = ++sceneToken;
+
+            phase = 'playing';
+            skipRequested = false;
+            stopRecording();
+            cancelSpeech();
+
+            document.getElementById('progress-label').textContent = `${num}번째 친구 이야기 (${num} / ${total})`;
+            document.getElementById('progress-bar').style.width = `${(num / total) * 100}%`;
+
+            const badge = document.getElementById('scenario-type-badge');
+            badge.classList.remove('bg-sky-100', 'text-sky-700', 'bg-amber-100', 'text-amber-700');
+            if (s.hiddenEmotion) {
+                badge.textContent = '🔍 숨은 마음을 찾아요';
+                badge.classList.add('bg-amber-100', 'text-amber-700');
+            } else {
+                badge.textContent = '💬 마음을 직접 말해요';
+                badge.classList.add('bg-sky-100', 'text-sky-700');
+            }
+
+            // 장면 꾸미기
+            document.getElementById('scene-stage').style.background = s.sceneBg;
+            document.getElementById('scene-place-icon').textContent = s.placeIcon;
+            document.getElementById('scene-place').textContent = s.place;
+            const deco = document.getElementById('scene-deco');
+            deco.innerHTML = '';
+            s.deco.forEach((emoji) => {
+                const span = document.createElement('span');
+                span.textContent = emoji;
+                deco.appendChild(span);
+            });
+
+            const avatar = document.getElementById('friend-avatar');
+            avatar.classList.remove('char-talking');
+            avatar.textContent = s.avatar;
+            document.getElementById('friend-mood').textContent = s.mood;
+            document.getElementById('friend-name').textContent = s.friendName;
+            document.getElementById('prompt-instruction').textContent = `${s.callName}에게 공감하는 답장을 써 주세요!`;
+
+            const hint = document.getElementById('hidden-emotion-hint');
+            hint.classList.add('hidden');
+            hint.classList.remove('flex');
+
+            if (!keepReply) clearReplyText();
+            document.getElementById('chat-log').innerHTML = '';
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('replay-btn').classList.remove('hidden');
+
+            // 친구가 걸어 들어오는 등장 효과를 다시 재생
+            const wrap = document.getElementById('friend-wrap');
+            wrap.classList.remove('char-enter');
+            void wrap.offsetWidth;
+            wrap.classList.add('char-enter');
+            await sleep(700);
+
+            for (const lineText of [s.intro, ...s.lines]) {
+                if (token !== sceneToken) return;
+                await friendSays(lineText, token);
+                if (token !== sceneToken) return;
+                if (!skipRequested) await sleep(350);
+            }
+            if (token !== sceneToken) return;
+
+            // 친구의 말이 끝나면 답장 칸이 열림
+            phase = 'answering';
+            if (s.hiddenEmotion) {
+                hint.classList.remove('hidden');
+                hint.classList.add('flex');
+            }
+            const inputArea = document.getElementById('input-area');
+            inputArea.classList.remove('hidden');
+            document.getElementById('submit-btn').disabled = false;
+            inputArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (inputMode === 'keyboard') {
+                document.getElementById('student-reply').focus({ preventScroll: true });
+            }
+        }
+
+        function replayScene() {
+            if (phase === 'playing' || phase === 'answering') {
+                loadScenario(true);
+            }
+        }
+
+        // ==========================================
+        // 5. 공감 답변 평가 (AI 우선, 안 되면 자체 채점)
+        // ==========================================
+        const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
+        const AI_TIMEOUT_MS = 12000;
+
+        function clampScore(value, max) {
+            const n = Math.round(Number(value));
+            if (!Number.isFinite(n)) return 0;
+            return Math.max(0, Math.min(max, n));
+        }
+
+        async function evaluateWithAI(scenario, replyText) {
+            const systemPrompt = [
+                '너는 초등학교 3학년 학생의 공감 대화 연습을 도와주는 다정한 담임 선생님이야.',
+                '친구의 말과 학생의 대답을 보고 아래 기준으로 채점해.',
+                '- situationScore (0~35): 친구에게 일어난 일을 대답 속에서 짚어 주었는가',
+                '- emotionScore (0~35): 친구의 기분을 알맞게 읽어 주었는가',
+                '- warmthScore (0~30): 다정한 말투로 위로하거나 응원했는가',
+                '친구를 놀리거나 탓하는 말, 상황과 관계없는 말은 낮은 점수를 줘.',
+                'friendReply: 그 친구가 학생의 대답을 듣고 하는 답장 (반말, 1~2문장)',
+                'praise: 선생님이 학생에게 해 주는 칭찬 (잘한 점을 구체적으로, 1~2문장, 3학년이 이해할 쉬운 말)',
+                'betterExample: 더 좋은 공감 대답 예시 (학생이 친구에게 하는 반말, 1~2문장)'
+            ].join('\n');
+
+            const userPrompt = [
+                `친구 이름: ${scenario.friendName}`,
+                `친구에게 있었던 일: ${scenario.situationSummary}`,
+                `친구의 마음: ${scenario.emotionLabel}`,
+                `친구가 한 말: "${scenario.dialogue}"`,
+                `학생의 대답: "${replyText}"`
+            ].join('\n');
+
+            const payload = {
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                    responseSchema: {
+                        type: 'OBJECT',
+                        properties: {
+                            situationScore: { type: 'INTEGER' },
+                            emotionScore: { type: 'INTEGER' },
+                            warmthScore: { type: 'INTEGER' },
+                            friendReply: { type: 'STRING' },
+                            praise: { type: 'STRING' },
+                            betterExample: { type: 'STRING' }
+                        },
+                        required: ['situationScore', 'emotionScore', 'warmthScore', 'friendReply', 'praise', 'betterExample']
+                    }
+                }
+            };
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    }
+                );
+                if (!response.ok) {
+                    throw new Error(`AI 응답 오류: ${response.status}`);
+                }
+                const data = await response.json();
+                const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+                if (!parsed.friendReply || !parsed.praise || !parsed.betterExample) {
+                    throw new Error('AI 응답 형식 오류');
+                }
+                return {
+                    situation: clampScore(parsed.situationScore, 35),
+                    emotion: clampScore(parsed.emotionScore, 35),
+                    warmth: clampScore(parsed.warmthScore, 30),
+                    friendReply: String(parsed.friendReply),
+                    praise: String(parsed.praise),
+                    example: String(parsed.betterExample)
+                };
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        // AI를 쓸 수 없을 때 쓰는 낱말 기반 자체 채점
+        const EMOTION_WORDS = ['짜증', '화가', '화났', '화나', '속상', '억울', '슬프', '슬펐', '슬퍼', '슬플', '서운', '외롭', '외로', '신나', '신났', '뿌듯', '기쁘', '기뻤', '자랑', '떨리', '떨렸', '걱정', '긴장', '아쉽', '아쉬', '당황', '기분', '행복', '힘들', '창피', '부끄', '실망', '설레', '설렜', '기대', '미안', '무시', '불안', '보고 싶', '좋겠'];
+        const WARMTH_WORDS = ['괜찮', '힘내', '응원', '같이', '도와', '축하', '대단', '멋지', '멋져', '멋있', '최고', '잘할', '잘했', '나라도', '나도', '나랑', '고마', '다음', '해보자', '해 보자', '보자', '가자', '줄게', '파이팅', '화이팅', '걱정 마', '걱정하지', '바라', '재미있게', '잘 다녀', '이해해'];
+        const EMPATHY_ENDINGS = ['겠다', '겠구나', '겠네', '겠어', '했지', '구나', '했겠'];
+        const UNKIND_WORDS = ['바보', '멍청', '네 잘못', '니 잘못', '너 잘못', '그것도 못', '어쩌라고', '알 게 뭐', '시끄러', '꺼져', '웃기'];
+
+        function countHits(text, words) {
+            return words.filter((word) => text.includes(word)).length;
+        }
+
+        function matchesAny(keyword, words) {
+            return words.some((word) => keyword.includes(word) || word.includes(keyword));
+        }
+
+        function evaluateLocally(scenario, replyText) {
+            const emotionKeys = scenario.keywords.filter((k) => matchesAny(k, EMOTION_WORDS));
+            const situationKeys = scenario.keywords.filter((k) => !matchesAny(k, EMOTION_WORDS) && !matchesAny(k, WARMTH_WORDS));
+
+            const situationHits = countHits(replyText, situationKeys);
+            const targetEmotionHits = countHits(replyText, emotionKeys);
+            const generalEmotionHits = countHits(replyText, EMOTION_WORDS);
+            const warmthHits = countHits(replyText, WARMTH_WORDS);
+            const hasEmpathyEnding = countHits(replyText, EMPATHY_ENDINGS) > 0;
+            const isUnkind = countHits(replyText, UNKIND_WORDS) > 0;
+
+            let situation = [10, 22, 30, 35][Math.min(situationHits, 3)];
+            let emotion;
+            if (targetEmotionHits > 0) {
+                emotion = hasEmpathyEnding ? 35 : 28;
+            } else if (generalEmotionHits > 0) {
+                emotion = hasEmpathyEnding ? 23 : 18;
+            } else {
+                emotion = hasEmpathyEnding ? 12 : 5;
+            }
+            let warmth = [8, 18, 25, 30][Math.min(warmthHits, 3)];
+
+            if (isUnkind) {
+                warmth = 3;
+                emotion = Math.min(emotion, 15);
+            }
+            if (replyText.length < 10) {
+                situation = Math.min(situation, 15);
+                emotion = Math.min(emotion, 18);
+                warmth = Math.min(warmth, 15);
+            }
+
+            const total = situation + emotion + warmth;
+            let friendReply;
+            if (isUnkind) {
+                friendReply = '그렇게 말하니까 마음이 더 아파... 조금만 다정하게 말해 줄래?';
+            } else if (total >= 85) {
+                friendReply = '내 마음을 딱 알아줘서 정말 고마워! 기분이 한결 나아졌어.';
+            } else if (total >= 65) {
+                friendReply = '내 이야기를 들어줘서 고마워. 덕분에 마음이 조금 편해졌어.';
+            } else if (total >= 40) {
+                friendReply = '들어줘서 고마워. 그런데 내 마음이 어땠는지도 알아주면 더 좋겠어.';
+            } else {
+                friendReply = '음... 내 이야기를 조금 더 자세히 들어줄 수 있을까?';
+            }
+
+            const strengths = [];
+            if (situation >= 30) strengths.push('친구에게 무슨 일이 있었는지 잘 짚어 주었고');
+            if (emotion >= 28) strengths.push('친구의 마음을 알맞게 읽어 주었고');
+            if (warmth >= 25) strengths.push('다정한 말로 힘을 주었고');
+
+            let praise;
+            if (isUnkind) {
+                praise = '끝까지 대답을 써 준 점은 좋아요.';
+            } else if (strengths.length > 0) {
+                praise = strengths.join(' ').replace(/고$/, '어요') + '!';
+            } else {
+                praise = '친구의 이야기에 대답해 주려고 노력했어요!';
+            }
+
+            let tip = '';
+            if (isUnkind) {
+                tip = ' 친구가 들었을 때 마음이 아플 수 있는 말은 빼고, 다정한 말로 바꿔 보아요.';
+            } else {
+                const ratios = [
+                    { ratio: situation / 35, text: ' 다음에는 친구에게 있었던 일을 한 번 더 말해 주면 더 좋아요.' },
+                    { ratio: emotion / 35, text: ` 다음에는 친구의 기분(${scenario.emotionLabel})을 말로 알아주면 더 좋아요.` },
+                    { ratio: warmth / 30, text: ' 다음에는 위로나 응원의 말을 한마디 덧붙여 보아요.' }
+                ];
+                const weakest = ratios.reduce((a, b) => (b.ratio < a.ratio ? b : a));
+                if (weakest.ratio < 0.8) tip = weakest.text;
+            }
+
+            return {
+                situation,
+                emotion,
+                warmth,
+                friendReply,
+                praise: praise + tip,
+                example: scenario.sampleAnswer
+            };
+        }
+
+        async function submitResponse() {
+            if (phase !== 'answering') return;
+
+            const textarea = document.getElementById('student-reply');
+            const replyText = textarea.value.trim();
+
+            if (replyText.length < 5) {
+                showToast('친구에게 해줄 말을 조금 더 길게 적어 주세요! ✏️');
+                return;
+            }
+
+            phase = 'evaluating';
+            skipRequested = false;
+            const token = sceneToken;
+            const scenario = scenarios[currentIndex];
+
+            stopRecording();
+            cancelSpeech();
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('replay-btn').classList.add('hidden');
+            const hint = document.getElementById('hidden-emotion-hint');
+            hint.classList.add('hidden');
+            hint.classList.remove('flex');
+
+            // 내 답장이 대화에 올라가고, 친구가 답장을 쓰는 동안 점 세 개가 움직임
+            addStudentBubble(replyText);
+            const typingRow = addTypingIndicator(scenario);
+            typingRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            let result;
+            try {
+                result = await evaluateWithAI(scenario, replyText);
+            } catch (error) {
+                console.warn('AI 평가를 쓸 수 없어 자체 채점으로 바꿉니다:', error);
+                result = evaluateLocally(scenario, replyText);
+                await sleep(900);
+            }
+            typingRow.remove();
+            if (token !== sceneToken) return;
+
+            result.total = result.situation + result.emotion + result.warmth;
+            result.reply = replyText;
+            result.scenario = scenario;
+            resultsHistory.push(result);
+
+            // 내 답장을 들은 친구의 표정이 바뀌고, 친구가 대답함
+            let moodAfter = '🥺';
+            if (result.total >= 65) moodAfter = '😊';
+            else if (result.total >= 40) moodAfter = '🙂';
+            document.getElementById('friend-mood').textContent = moodAfter;
+
+            await friendSays(result.friendReply, token);
+            if (token !== sceneToken) return;
+
+            phase = 'feedback';
+            showFeedback(result);
+        }
+
+        function heartsFor(total) {
+            const filled = Math.max(0, Math.min(5, Math.round(total / 20)));
+            return '❤️'.repeat(filled) + '🤍'.repeat(5 - filled);
+        }
+
+        function showFeedback(result) {
+            document.getElementById('feedback-score').textContent = `${result.total}점`;
+            document.getElementById('feedback-hearts').textContent = heartsFor(result.total);
+            document.getElementById('score-situation').textContent = `${result.situation} / 35점`;
+            document.getElementById('score-emotion').textContent = `${result.emotion} / 35점`;
+            document.getElementById('score-warmth').textContent = `${result.warmth} / 30점`;
+            document.getElementById('feedback-praise').textContent = result.praise;
+            document.getElementById('feedback-example').textContent = `"${result.example}"`;
+
+            const isLast = currentIndex === scenarios.length - 1;
+            document.getElementById('next-btn-text').textContent = isLast
+                ? '내 공감 상장 받으러 가기'
+                : '다음 친구 만나러 가기';
+
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.classList.remove('hidden');
+            feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function nextScenario() {
+            if (phase !== 'feedback') return;
+            cancelSpeech();
+            currentIndex += 1;
+            if (currentIndex >= scenarios.length) {
+                sceneToken += 1;
+                phase = 'idle';
+                showResult();
+            } else {
+                loadScenario();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // ==========================================
+        // 6. 최종 평가지 (상장)
+        // ==========================================
+        function showResult() {
+            const count = resultsHistory.length || 1;
+            const sum = (key) => resultsHistory.reduce((acc, r) => acc + r[key], 0);
+            const avgScore = Math.round(sum('total') / count);
+            const percents = {
+                situation: Math.round((sum('situation') / (35 * count)) * 100),
+                emotion: Math.round((sum('emotion') / (35 * count)) * 100),
+                warmth: Math.round((sum('warmth') / (30 * count)) * 100)
+            };
+
+            let level;
+            if (avgScore >= 90) {
+                level = { icon: '👑', title: '따뜻한 마음 요정' };
+            } else if (avgScore >= 75) {
+                level = { icon: '🌟', title: '반짝반짝 공감 박사' };
+            } else if (avgScore >= 55) {
+                level = { icon: '🌱', title: '쑥쑥 자라는 공감 새싹' };
+            } else {
+                level = { icon: '💪', title: '씩씩한 공감 연습생' };
+            }
+
+            document.getElementById('cert-student-name').textContent = studentName;
+            document.getElementById('cert-badge-icon').textContent = level.icon;
+            document.getElementById('cert-title').textContent = level.title;
+            document.getElementById('cert-avg-score').textContent = `${avgScore}점`;
+            document.getElementById('cert-date').textContent = new Date().toLocaleDateString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            const areaNames = {
+                situation: '친구에게 있었던 일을 짚어 주는 것',
+                emotion: '친구의 마음을 읽어 주는 것',
+                warmth: '따뜻하게 위로하고 응원하는 것'
+            };
+            const sorted = Object.keys(percents).sort((a, b) => percents[b] - percents[a]);
+            const best = sorted[0];
+            const weakest = sorted[sorted.length - 1];
+            let summary = `${scenarios.length}명의 친구들 이야기를 끝까지 들어주고 대답해 주어서 정말 대단해요! `;
+            summary += `특히 ${areaNames[best]}을 잘했어요. `;
+            if (percents[weakest] < 80 && weakest !== best) {
+                summary += `앞으로 ${areaNames[weakest]}도 조금 더 연습하면 친구들이 더 좋아할 거예요. `;
+            }
+            summary += '교실에서도 친구에게 따뜻한 말 한마디를 건네 보아요!';
+            document.getElementById('cert-summary').textContent = summary;
+
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            resultsHistory.forEach((r, index) => {
+                const item = document.createElement('div');
+                item.className = 'bg-gray-50 rounded-2xl p-4 border border-gray-100';
+
+                const head = document.createElement('div');
+                head.className = 'flex items-center justify-between gap-2 mb-1.5';
+                const who = document.createElement('span');
+                who.className = 'font-jua text-base text-gray-800';
+                who.textContent = `${index + 1}. ${r.scenario.avatar} ${r.scenario.friendName}`;
+                const score = document.createElement('span');
+                score.className = 'font-jua text-base text-emerald-600 shrink-0';
+                score.textContent = `${r.total}점`;
+                head.append(who, score);
+
+                const said = document.createElement('p');
+                said.className = 'text-sm text-gray-500 mb-1.5 break-keep';
+                said.textContent = `친구: "${r.scenario.dialogue}"`;
+
+                const mine = document.createElement('p');
+                mine.className = 'text-sm sm:text-base text-gray-800 font-bold bg-white rounded-xl p-3 border border-amber-100 break-keep';
+                mine.textContent = `나: "${r.reply}"`;
+
+                item.append(head, said, mine);
+                historyList.appendChild(item);
+            });
+
+            showScreen('result');
+
+            // 화면이 보인 뒤에 그래프가 차오르도록 살짝 늦게 채움
+            setTimeout(() => {
+                Object.keys(percents).forEach((key) => {
+                    document.getElementById(`bar-${key}`).style.width = `${percents[key]}%`;
+                    document.getElementById(`bar-${key}-text`).textContent = `${percents[key]}%`;
+                });
+            }, 150);
+        }
+
+        function saveAsImage() {
+            if (typeof html2canvas === 'undefined') {
+                showToast('이미지 저장 기능을 불러오지 못했어요. 인쇄하기를 눌러 보세요! 🖨️');
+                return;
+            }
+            const card = document.getElementById('certificate-card');
+            html2canvas(card, { scale: 2, backgroundColor: '#FFFFFF' })
+                .then((canvas) => {
+                    const link = document.createElement('a');
+                    link.download = `공감마스터상장_${studentName}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    showToast('평가지를 이미지로 저장했어요! 📸');
+                })
+                .catch((error) => {
+                    console.warn('이미지 저장 실패:', error);
+                    showToast('이미지 저장에 실패했어요. 인쇄하기를 눌러 보세요! 🖨️');
+                });
+        }
+
+        function restartApp() {
+            sceneToken += 1;
+            phase = 'idle';
+            cancelSpeech();
+            stopRecording();
+            currentIndex = 0;
+            resultsHistory = [];
+            ['situation', 'emotion', 'warmth'].forEach((key) => {
+                document.getElementById(`bar-${key}`).style.width = '0%';
+            });
+            document.getElementById('header-badge').classList.add('hidden');
+            setInputMode('keyboard');
+            showScreen('start');
+        }
+
+        // ==========================================
+        // 7. 초기 이벤트 연결
+        // ==========================================
+        document.getElementById('student-reply').addEventListener('input', updateCharCount);
+        // 채팅처럼 Enter로 보내기 (줄바꿈은 Shift+Enter)
+        document.getElementById('student-reply').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+                event.preventDefault();
+                submitResponse();
+            }
+        });
+        document.getElementById('student-name-input').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.isComposing) {
+                startPractice();
+            }
+        });
+        // 한국어 목소리 목록을 미리 불러 둠
+        if (speechSupported()) {
+            window.speechSynthesis.getVoices();
+        }
+    </script>
+</body>
+</html>
